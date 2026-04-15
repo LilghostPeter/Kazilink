@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KaziLink Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+:root {
+  --bg: #f7f8fc;
+  --white: #ffffff;
+  --text: #1a1a2e;
+  --muted: #7a7a9a;
+  --accent1: #0057ff;
+  --accent2: #ff2d55;
+  --accent3: #f97316;
+  --accent4: #7c3aed;
+  --border: #e8e8f0;
+  --card: #ffffff;
+  --shadow: 0 4px 24px rgba(0,0,0,0.07);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ─── MODAL OVERLAY ─── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+  z-index: 999;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+  background: white;
+  border-radius: 24px;
+  padding: 40px 36px;
+  width: 100%; max-width: 420px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.18);
+  position: relative;
+  animation: modalIn 0.3s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-close {
+  position: absolute; top: 16px; right: 18px;
+  background: none; border: none; font-size: 20px;
+  color: var(--muted); cursor: pointer;
+}
+
+.modal-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px; color: var(--accent1);
+  text-align: center; margin-bottom: 6px;
+}
+.modal-logo span { color: var(--accent2); }
+.modal-sub { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+
+.auth-tabs { display: flex; gap: 0; margin-bottom: 28px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+.auth-tab {
+  flex: 1; padding: 10px; text-align: center; font-size: 14px;
+  font-weight: 600; cursor: pointer; background: var(--bg); color: var(--muted);
+  border: none; font-family: 'DM Sans', sans-serif; transition: 0.2s;
+}
+.auth-tab.active { background: var(--accent1); color: white; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+.form-group input, .form-group select {
+  width: 100%; padding: 12px 14px;
+  border: 1.5px solid var(--border); border-radius: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px;
+  color: var(--text); background: var(--bg); outline: none;
+  transition: border-color 0.2s;
+}
+.form-group input:focus, .form-group select:focus { border-color: var(--accent1); background: white; }
+
+.auth-btn {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--accent1), #0040cc);
+  color: white; border: none; border-radius: 14px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px;
+  font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 6px;
+}
+.auth-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+
+.social-divider { text-align: center; margin: 18px 0; color: var(--muted); font-size: 13px; position: relative; }
+.social-divider::before, .social-divider::after {
+  content: ''; position: absolute; top: 50%; width: 38%; height: 1px; background: var(--border);
+}
+.social-divider::before { left: 0; }
+.social-divider::after { right: 0; }
+
+.social-btns { display: flex; gap: 10px; }
+.social-btn {
+  flex: 1; padding: 11px; border: 1.5px solid var(--border); border-radius: 12px;
+  background: white; cursor: pointer; font-size: 18px; transition: 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: var(--text);
+}
+.social-btn:hover { border-color: var(--accent1); }
+
+/* ─── USER DROPDOWN ─── */
+.user-menu { position: relative; }
+.user-dropdown {
+  display: none;
+  position: absolute; top: 46px; right: 0;
+  background: white; border-radius: 16px; border: 1px solid var(--border);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+  min-width: 220px; padding: 8px; z-index: 500;
+}
+.user-dropdown.open { display: block; animation: modalIn 0.2s ease; }
+.dropdown-header { padding: 12px 14px 10px; border-bottom: 1px solid var(--border); margin-bottom: 6px; }
+.dropdown-header strong { display: block; font-size: 14px; }
+.dropdown-header span { font-size: 12px; color: var(--muted); }
+.dropdown-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-radius: 10px; cursor: pointer;
+  font-size: 14px; color: var(--text); transition: 0.15s;
+}
+.dropdown-item:hover { background: var(--bg); }
+.dropdown-item i { width: 16px; color: var(--muted); }
+.dropdown-item.danger { color: var(--accent2); }
+.dropdown-item.danger i { color: var(--accent2); }
+
+/* ─── TOPBAR ─── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 60px;
+}
+
+.logo { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--accent1); letter-spacing: -0.5px; }
+.logo span { color: var(--accent2); }
+
+.search-bar {
+  display: flex; align-items: center; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 30px;
+  padding: 8px 16px; gap: 8px; width: 280px;
+}
+.search-bar input { border: none; background: transparent; outline: none; font-family: 'DM Sans', sans-serif; font-size: 14px; width: 100%; color: var(--text); }
+.search-bar i { color: var(--muted); font-size: 13px; }
+
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent1), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 13px; font-weight: 700; cursor: pointer;
+}
+
+.login-topbar-btn {
+  padding: 8px 18px; background: var(--accent1); color: white;
+  border: none; border-radius: 20px; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;
+}
+.login-topbar-btn:hover { background: #0040cc; }
+
+.notif-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--bg); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; position: relative; color: var(--muted);
+}
+
+.badge {
+  position: absolute; top: -2px; right: -2px;
+  width: 14px; height: 14px; background: var(--accent2);
+  border-radius: 50%; font-size: 9px;
+  color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;
+}
+
+/* ─── TAB NAV ─── */
+.tab-nav {
+  display: flex; border-bottom: 1px solid var(--border);
+  background: var(--white); padding: 0 24px; gap: 4px; overflow-x: auto;
+}
+
+.tab-btn {
+  padding: 14px 20px; background: none; border: none;
+  border-bottom: 2px solid transparent;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+  color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.2s;
+  display: flex; align-items: center; gap: 7px;
+}
+.tab-btn.active { color: var(--accent1); border-bottom-color: var(--accent1); }
+.tab-btn.active.talent-tab { color: var(--accent2); border-bottom-color: var(--accent2); }
+.tab-btn.active.jumia { color: var(--accent3); border-bottom-color: var(--accent3); }
+.tab-btn.active.scholar-tab { color: var(--accent4); border-bottom-color: var(--accent4); }
+.tab-btn:hover { color: var(--text); }
+
+/* ─── CONTENT ─── */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ─── NETWORK (LinkedIn) ─── */
+.ln-layout {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: 260px 1fr 280px;
+  gap: 20px; padding: 24px 16px;
+}
+
+.card { background: var(--card); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
+
+.profile-card { padding: 0; }
+.profile-banner { height: 70px; background: linear-gradient(135deg, var(--accent1), #00c6ff); }
+.profile-info { padding: 0 16px 16px; text-align: center; margin-top: -28px; }
+
+.profile-avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent2), var(--accent3));
+  margin: 0 auto 8px; border: 3px solid white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700; color: white;
+}
+
+.profile-info h3 { font-size: 15px; font-weight: 700; }
+.profile-info p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.profile-stats { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--border); margin-top: 12px; }
+.stat { padding: 10px; text-align: center; }
+.stat strong { display: block; font-size: 16px; font-weight: 700; color: var(--accent1); }
+.stat span { font-size: 11px; color: var(--muted); }
+
+.feed { display: flex; flex-direction: column; gap: 16px; }
+.post-card { padding: 20px; }
+.post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.post-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 15px; flex-shrink: 0; }
+.post-meta h4 { font-size: 14px; font-weight: 600; }
+.post-meta span { font-size: 12px; color: var(--muted); }
+.post-text { font-size: 14px; line-height: 1.6; color: #333; }
+.post-image { width: 100%; height: 180px; background: linear-gradient(135deg, #e8f0ff, #f0e8ff); border-radius: 12px; margin-top: 12px; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+.post-actions { display: flex; gap: 16px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+
+.action-btn { background: none; border: none; display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 13px; cursor: pointer; padding: 6px 10px; border-radius: 8px; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+.action-btn:hover { background: var(--bg); color: var(--accent1); }
+
+.job-card { padding: 16px; display: flex; gap: 12px; align-items: flex-start; }
+.job-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.job-info h4 { font-size: 14px; font-weight: 600; }
+.job-info p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.job-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.tag { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: #eef2ff; color: var(--accent1); font-weight: 500; }
+.tag.green { background: #edfdf4; color: #16a34a; }
+.tag.purple { background: #f5f3ff; color: var(--accent4); }
+
+.apply-btn { margin-top: 10px; padding: 7px 16px; background: var(--accent1); color: white; border: none; border-radius: 20px; font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.apply-btn:hover { background: #0040cc; }
+
+/* ─── TALENT (new icon: fa-star) ─── */
+.tt-layout { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+.tt-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.tt-header h2 { font-family: 'Playfair Display', serif; font-size: 22px; }
+.upload-btn { background: linear-gradient(135deg, var(--accent2), #ff6b35); color: white; border: none; padding: 10px 20px; border-radius: 25px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+.upload-btn:hover { opacity: 0.9; }
+
+.tt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.tt-card { border-radius: 16px; overflow: hidden; background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow); cursor: pointer; transition: transform 0.2s; }
+.tt-card:hover { transform: translateY(-4px); }
+.tt-thumb { height: 260px; display: flex; align-items: center; justify-content: center; font-size: 50px; position: relative; }
+.tt-play { position: absolute; width: 50px; height: 50px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--accent2); }
+.tt-info { padding: 12px; }
+.tt-info h4 { font-size: 13px; font-weight: 600; }
+.tt-info span { font-size: 12px; color: var(--muted); }
+.tt-stats { display: flex; gap: 12px; margin-top: 8px; }
+.tt-stat { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+.tt-stat i { color: var(--accent2); }
+.upload-zone { border: 2px dashed var(--border); border-radius: 16px; padding: 40px; text-align: center; color: var(--muted); margin-bottom: 24px; cursor: pointer; transition: 0.2s; }
+.upload-zone:hover { border-color: var(--accent2); color: var(--accent2); }
+.upload-zone i { font-size: 36px; margin-bottom: 10px; display: block; }
+.upload-zone p { font-size: 14px; }
+
+/* ─── SHOP (Jumia) ─── */
+.jm-layout { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+.jm-banner { background: linear-gradient(135deg, var(--accent3), #ef4444); border-radius: 20px; padding: 32px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; color: white; overflow: hidden; position: relative; }
+.jm-banner::before { content: ''; position: absolute; right: -40px; top: -40px; width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.1); }
+.jm-banner h2 { font-family: 'Playfair Display', serif; font-size: 26px; margin-bottom: 6px; }
+.jm-banner p { font-size: 14px; opacity: 0.85; }
+.shop-btn { background: white; color: var(--accent3); border: none; padding: 12px 24px; border-radius: 25px; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; font-size: 14px; z-index: 1; }
+
+.categories { display: flex; gap: 10px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 4px; }
+.cat-pill { padding: 8px 18px; border-radius: 25px; border: 1.5px solid var(--border); background: white; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: 0.2s; font-family: 'DM Sans', sans-serif; color: var(--text); display: flex; align-items: center; gap: 6px; }
+.cat-pill.active { background: var(--accent3); color: white; border-color: var(--accent3); }
+.cat-pill:hover { border-color: var(--accent3); color: var(--accent3); }
+
+.jm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.product-card { background: var(--card); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; cursor: pointer; transition: transform 0.2s; }
+.product-card:hover { transform: translateY(-4px); }
+.product-img { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 50px; background: var(--bg); }
+.product-info { padding: 14px; }
+.product-info h4 { font-size: 13px; font-weight: 600; line-height: 1.4; }
+.price { font-size: 16px; font-weight: 700; color: var(--accent3); margin-top: 6px; }
+.old-price { font-size: 12px; color: var(--muted); text-decoration: line-through; margin-left: 6px; }
+.discount { font-size: 11px; background: #fff3ed; color: var(--accent3); padding: 2px 7px; border-radius: 5px; font-weight: 600; }
+.stars { color: #f59e0b; font-size: 11px; margin-top: 4px; }
+.stars span { color: var(--muted); font-size: 11px; margin-left: 4px; }
+.add-cart { width: 100%; margin-top: 10px; background: var(--accent3); color: white; border: none; padding: 9px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s; }
+.add-cart:hover { background: #ea6800; }
+
+.cart-count { position: fixed; bottom: 24px; right: 24px; background: var(--accent3); color: white; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 20px rgba(249,115,22,0.4); cursor: pointer; z-index: 200; }
+.cart-badge { position: absolute; top: -4px; right: -4px; background: var(--accent2); color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+
+/* ─── SCHOLARSHIPS ─── */
+.sc-layout { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+
+.sc-banner {
+  background: linear-gradient(135deg, var(--accent4), #2563eb);
+  border-radius: 20px; padding: 36px; margin-bottom: 28px;
+  color: white; position: relative; overflow: hidden;
+}
+.sc-banner::before { content: '🎓'; position: absolute; right: 32px; top: 50%; transform: translateY(-50%); font-size: 90px; opacity: 0.25; }
+.sc-banner h2 { font-family: 'Playfair Display', serif; font-size: 28px; margin-bottom: 8px; }
+.sc-banner p { font-size: 15px; opacity: 0.88; max-width: 500px; }
+
+.sc-filters { display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; }
+.sc-filter { padding: 8px 18px; border-radius: 25px; border: 1.5px solid var(--border); background: white; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: 0.2s; font-family: 'DM Sans', sans-serif; color: var(--text); }
+.sc-filter.active { background: var(--accent4); color: white; border-color: var(--accent4); }
+.sc-filter:hover { border-color: var(--accent4); color: var(--accent4); }
+
+.sc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+
+.sc-card { background: white; border-radius: 18px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; transition: transform 0.2s; }
+.sc-card:hover { transform: translateY(-4px); }
+
+.sc-card-top { padding: 20px; display: flex; gap: 14px; align-items: flex-start; }
+.sc-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.sc-card-info h4 { font-size: 15px; font-weight: 700; line-height: 1.3; }
+.sc-card-info p { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+.sc-card-body { padding: 0 20px 20px; }
+.sc-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.sc-meta-item { background: var(--bg); border-radius: 10px; padding: 10px 12px; }
+.sc-meta-item label { display: block; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+.sc-meta-item span { font-size: 13px; font-weight: 600; }
+
+.sc-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.sc-desc { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 14px; }
+
+.sc-apply-btn {
+  width: 100%; padding: 11px;
+  background: linear-gradient(135deg, var(--accent4), #2563eb);
+  color: white; border: none; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif; font-weight: 700;
+  font-size: 14px; cursor: pointer; transition: 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.sc-apply-btn:hover { opacity: 0.9; }
+
+.sc-deadline { font-size: 12px; color: var(--accent2); font-weight: 600; display: flex; align-items: center; gap: 4px; margin-bottom: 12px; }
+
+.sc-stats-bar { display: flex; gap: 16px; padding: 14px 20px; border-top: 1px solid var(--border); background: var(--bg); }
+.sc-stat { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.sc-stat i { color: var(--accent4); }
+
+/* ─── ANIMATIONS ─── */
+.fade-up { opacity: 0; transform: translateY(18px); animation: fadeUp 0.5s forwards; }
+@keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 900px) {
+  .ln-layout { grid-template-columns: 1fr; }
+  .search-bar { display: none; }
+  .sc-grid { grid-template-columns: 1fr; }
+}
+
+/* ─── SUCCESS TOAST ─── */
+.toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: #16a34a; color: white; padding: 12px 24px; border-radius: 30px;
+  font-size: 14px; font-weight: 600; opacity: 0; z-index: 1000; transition: all 0.3s;
+  display: flex; align-items: center; gap: 8px;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN / REGISTER MODAL ══════════ -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAuth()"><i class="fas fa-times"></i></button>
+    <div class="modal-logo">Kazi<span>Link</span> Pro</div>
+    <p class="modal-sub">Connect · Work · Grow</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuth('login', this)">Log In</button>
+      <button class="auth-tab" onclick="switchAuth('register', this)">Create Account</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label>Email or Phone</label>
+        <input type="text" id="loginEmail" placeholder="e.g. john@email.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="Enter your password">
+      </div>
+      <button class="auth-btn" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i> &nbsp;Log In</button>
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:12px;cursor:pointer;">Forgot password?</p>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="registerForm" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" id="regFirst" placeholder="John">
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" id="regLast" placeholder="Mwangi">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="you@email.com">
+      </div>
+      <div class="form-group">
+        <label>Phone (M-Pesa)</label>
+        <input type="tel" id="regPhone" placeholder="+254 7XX XXX XXX">
+      </div>
+      <div class="form-group">
+        <label>I am a…</label>
+        <select id="regRole">
+          <option value="">Select your role</option>
+          <option>Job Seeker / Worker</option>
+          <option>Employer / Business</option>
+          <option>Student / Scholar</option>
+          <option>Freelancer / Talent</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="regPass" placeholder="Min 8 characters">
+      </div>
+      <button class="auth-btn" onclick="doRegister()"><i class="fas fa-user-plus"></i> &nbsp;Create Account</button>
+    </div>
+
+    <div class="social-divider">or continue with</div>
+    <div class="social-btns">
+      <button class="social-btn" onclick="socialLogin('Google')"><i class="fab fa-google" style="color:#ea4335"></i> Google</button>
+      <button class="social-btn" onclick="socialLogin('Facebook')"><i class="fab fa-facebook" style="color:#1877f2"></i> Facebook</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TOPBAR ══════════ -->
+<div class="topbar">
+  <div class="logo">Kazi<span>Link</span> Pro</div>
+
+  <div class="search-bar">
+    <i class="fas fa-search"></i>
+    <input type="text" placeholder="Search jobs, talent, scholarships…">
+  </div>
+
+  <div class="topbar-actions">
+    <div class="notif-btn" id="notifBtn" style="display:none">
+      <i class="fas fa-bell"></i>
+      <div class="badge">3</div>
+    </div>
+
+    <!-- NOT logged in -->
+    <button class="login-topbar-btn" id="loginBtn" onclick="openAuth()">
+      <i class="fas fa-sign-in-alt"></i> Log In
+    </button>
+
+    <!-- Logged in -->
+    <div class="user-menu" id="userMenu" style="display:none">
+      <div class="avatar" id="userAvatar" onclick="toggleDropdown()">JM</div>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="dropdown-header">
+          <strong id="dropdownName">John Mwangi</strong>
+          <span id="dropdownRole">Job Seeker</span>
+        </div>
+        <div class="dropdown-item" onclick="showToast('Profile coming soon!')"><i class="fas fa-user"></i> My Profile</div>
+        <div class="dropdown-item" onclick="showToast('Applications coming soon!')"><i class="fas fa-file-alt"></i> My Applications</div>
+        <div class="dropdown-item" onclick="showToast('Saved items coming soon!')"><i class="fas fa-bookmark"></i> Saved</div>
+        <div class="dropdown-item" onclick="showToast('Settings coming soon!')"><i class="fas fa-cog"></i> Settings</div>
+        <div class="dropdown-item danger" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Log Out</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB NAV ══════════ -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('network', this)">
+    <!-- Network: people/community icon -->
+    <i class="fas fa-users" style="color:#0057ff"></i> Network
+  </button>
+  <button class="tab-btn talent-tab" onclick="switchTab('talent', this)">
+    <!-- Talent: star icon (changed from tiktok brand) -->
+    <i class="fas fa-star" style="color:#ff2d55"></i> Talent
+  </button>
+  <button class="tab-btn jumia" onclick="switchTab('shop', this)">
+    <i class="fas fa-shopping-bag" style="color:#f97316"></i> Shop
+  </button>
+  <button class="tab-btn scholar-tab" onclick="switchTab('scholarships', this)">
+    <i class="fas fa-graduation-cap" style="color:#7c3aed"></i> Scholarships
+  </button>
+</div>
+
+<!-- ══════════════════════════
+     NETWORK TAB
+══════════════════════════ -->
+<div id="network" class="tab-content active">
+  <div class="ln-layout">
+
+    <!-- LEFT -->
+    <div>
+      <div class="card profile-card fade-up">
+        <div class="profile-banner"></div>
+        <div class="profile-info">
+          <div class="profile-avatar" id="sidebarAvatar">JM</div>
+          <h3 id="sidebarName">John Mwangi</h3>
+          <p>Skilled Mason · Nairobi, Kenya</p>
+        </div>
+        <div class="profile-stats">
+          <div class="stat"><strong>142</strong><span>Connections</span></div>
+          <div class="stat"><strong>18</strong><span>Applications</span></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;padding:16px;">
+        <p style="font-size:13px;font-weight:700;margin-bottom:12px;">🔥 Trending Jobs</p>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="font-size:13px;"><strong>Site Supervisor</strong><br><span style="color:var(--muted);font-size:12px;">Kilimani · KES 4,500/day</span></div>
+          <div style="font-size:13px;"><strong>Welder</strong><br><span style="color:var(--muted);font-size:12px;">Mombasa · Contract</span></div>
+          <div style="font-size:13px;"><strong>Security Guard</strong><br><span style="color:var(--muted);font-size:12px;">CBD · KES 800/shift</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MIDDLE: Feed -->
+    <div class="feed fade-up delay-1">
+      <div class="card" style="padding:16px;">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <div class="avatar" style="width:42px;height:42px;" id="feedAvatar">JM</div>
+          <input type="text" placeholder="Share a skill, opportunity or update…"
+            style="flex:1;padding:10px 16px;border-radius:25px;border:1px solid var(--border);font-family:'DM Sans',sans-serif;font-size:14px;background:var(--bg);outline:none;">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button class="action-btn"><i class="fas fa-video" style="color:var(--accent2)"></i> Video</button>
+          <button class="action-btn"><i class="fas fa-image" style="color:#16a34a"></i> Photo</button>
+          <button class="action-btn"><i class="fas fa-briefcase" style="color:var(--accent1)"></i> Job</button>
+        </div>
+      </div>
+
+      <div class="card post-card fade-up delay-2">
+        <div class="post-header">
+          <div class="post-avatar" style="background:linear-gradient(135deg,#0057ff,#00c6ff)">MW</div>
+          <div class="post-meta"><h4>Mary Wanjiku</h4><span>Professional Cleaner · 2h ago</span></div>
+        </div>
+        <p class="post-text">Just completed a 3-month contract at a Westlands estate. Available for new opportunities! Experienced in deep cleaning, laundry and kitchen management. 🧹✨</p>
+        <div class="post-image">🏠</div>
+        <div class="post-actions">
+          <button class="action-btn"><i class="fas fa-thumbs-up"></i> 24 Likes</button>
+          <button class="action-btn"><i class="fas fa-comment"></i> 7 Comments</button>
+          <button class="action-btn"><i class="fas fa-share"></i> Share</button>
+        </div>
+      </div>
+
+      <div class="card post-card fade-up delay-3">
+        <div class="post-header">
+          <div class="post-avatar" style="background:linear-gradient(135deg,#f97316,#ef4444)">PO</div>
+          <div class="post-meta"><h4>Peter Odhiambo</h4><span>Electrical Contractor · 5h ago</span></div>
+        </div>
+        <p class="post-text">Hiring 3 experienced electricians for a new commercial building project in Thika Road. Must have EPRA certification. DM or apply below. Pay: KES 3,000/day. ⚡</p>
+        <div class="job-tags" style="margin-top:10px;">
+          <span class="tag">Electrician</span><span class="tag green">Hiring Now</span><span class="tag">Thika Road</span>
+        </div>
+        <div class="post-actions">
+          <button class="action-btn"><i class="fas fa-thumbs-up"></i> 51 Likes</button>
+          <button class="apply-btn"><i class="fas fa-paper-plane"></i> Apply Now</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div style="display:flex;flex-direction:column;gap:16px;" class="fade-up delay-4">
+      <p style="font-weight:700;font-size:15px;padding:4px 0;">🎯 Jobs For You</p>
+
+      <div class="card job-card">
+        <div class="job-icon" style="background:#eef2ff;">🏗️</div>
+        <div class="job-info">
+          <h4>Construction Worker</h4>
+          <p>Nairobi CBD · KES 1,500/day</p>
+          <div class="job-tags"><span class="tag">Daily Pay</span><span class="tag green">Open</span></div>
+          <button class="apply-btn" style="margin-top:8px;">Apply</button>
+        </div>
+      </div>
+
+      <div class="card job-card">
+        <div class="job-icon" style="background:#fff3ed;">🔧</div>
+        <div class="job-info">
+          <h4>Plumber Needed</h4>
+          <p>Karen Estate · Contract</p>
+          <div class="job-tags"><span class="tag">Experienced</span></div>
+          <button class="apply-btn" style="margin-top:8px;">Apply</button>
+        </div>
+      </div>
+
+      <div class="card job-card">
+        <div class="job-icon" style="background:#f0fdf4;">🌿</div>
+        <div class="job-info">
+          <h4>Gardener</h4>
+          <p>Lavington · KES 800/day</p>
+          <div class="job-tags"><span class="tag green">Beginner OK</span></div>
+          <button class="apply-btn" style="margin-top:8px;">Apply</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     TALENT TAB
+══════════════════════════ -->
+<div id="talent" class="tab-content">
+  <div class="tt-layout">
+    <div class="tt-header">
+      <h2><i class="fas fa-star" style="color:var(--accent2);font-size:20px;"></i> Talent Feed</h2>
+      <button class="upload-btn" onclick="document.getElementById('vidInput').click()">
+        <i class="fas fa-cloud-upload-alt"></i> Upload Video
+      </button>
+    </div>
+
+    <div class="upload-zone" onclick="document.getElementById('vidInput').click()">
+      <i class="fas fa-film"></i>
+      <p><strong>Tap to upload your skill video</strong><br>Show employers what you can do</p>
+      <input type="file" id="vidInput" accept="video/*" style="display:none" onchange="handleUpload(this)">
+    </div>
+
+    <div class="tt-grid" id="videoGrid">
+      <div class="tt-card fade-up">
+        <div class="tt-thumb" style="background:linear-gradient(135deg,#fef3c7,#fde68a)">🔧<div class="tt-play"><i class="fas fa-play"></i></div></div>
+        <div class="tt-info"><h4>Plumbing a kitchen sink — step by step</h4><span>@kamau_plumber</span>
+          <div class="tt-stats"><div class="tt-stat"><i class="fas fa-heart"></i> 1.2k</div><div class="tt-stat"><i class="fas fa-eye"></i> 8.4k</div></div>
+        </div>
+      </div>
+      <div class="tt-card fade-up delay-1">
+        <div class="tt-thumb" style="background:linear-gradient(135deg,#e0f2fe,#bae6fd)">⚡<div class="tt-play"><i class="fas fa-play"></i></div></div>
+        <div class="tt-info"><h4>Wiring a DB board safely</h4><span>@njoroge_electric</span>
+          <div class="tt-stats"><div class="tt-stat"><i class="fas fa-heart"></i> 3.5k</div><div class="tt-stat"><i class="fas fa-eye"></i> 22k</div></div>
+        </div>
+      </div>
+      <div class="tt-card fade-up delay-2">
+        <div class="tt-thumb" style="background:linear-gradient(135deg,#dcfce7,#bbf7d0)">🪣<div class="tt-play"><i class="fas fa-play"></i></div></div>
+        <div class="tt-info"><h4>Deep cleaning a 4-bedroom house</h4><span>@cleanpro_mary</span>
+          <div class="tt-stats"><div class="tt-stat"><i class="fas fa-heart"></i> 890</div><div class="tt-stat"><i class="fas fa-eye"></i> 5.1k</div></div>
+        </div>
+      </div>
+      <div class="tt-card fade-up delay-3">
+        <div class="tt-thumb" style="background:linear-gradient(135deg,#fce7f3,#fbcfe8)">🏗️<div class="tt-play"><i class="fas fa-play"></i></div></div>
+        <div class="tt-info"><h4>Laying tiles like a pro</h4><span>@tile_master_ke</span>
+          <div class="tt-stats"><div class="tt-stat"><i class="fas fa-heart"></i> 2.1k</div><div class="tt-stat"><i class="fas fa-eye"></i> 14k</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     SHOP TAB
+══════════════════════════ -->
+<div id="shop" class="tab-content">
+  <div class="jm-layout">
+    <div class="jm-banner fade-up">
+      <div><h2>🛒 KaziLink Shop</h2><p>Tools, equipment & supplies — delivered to you</p></div>
+      <button class="shop-btn">Browse All</button>
+    </div>
+    <div class="categories">
+      <div class="cat-pill active" onclick="setCategory(this)">🔨 All</div>
+      <div class="cat-pill" onclick="setCategory(this)">⚡ Electrical</div>
+      <div class="cat-pill" onclick="setCategory(this)">🔧 Plumbing</div>
+      <div class="cat-pill" onclick="setCategory(this)">🧹 Cleaning</div>
+      <div class="cat-pill" onclick="setCategory(this)">🏗️ Construction</div>
+      <div class="cat-pill" onclick="setCategory(this)">📱 Electronics</div>
+    </div>
+    <div class="jm-grid">
+      <div class="product-card fade-up">
+        <div class="product-img">🔧</div>
+        <div class="product-info"><h4>Professional Tool Set (42 pcs)</h4>
+          <div class="price">KES 2,500 <span class="old-price">3,200</span> <span class="discount">-22%</span></div>
+          <div class="stars">★★★★★ <span>(128)</span></div>
+          <button class="add-cart" onclick="addToCart()"><i class="fas fa-cart-plus"></i> Add to Cart</button>
+        </div>
+      </div>
+      <div class="product-card fade-up delay-1">
+        <div class="product-img">💡</div>
+        <div class="product-info"><h4>LED Work Light 50W Waterproof</h4>
+          <div class="price">KES 1,800 <span class="old-price">2,400</span> <span class="discount">-25%</span></div>
+          <div class="stars">★★★★☆ <span>(74)</span></div>
+          <button class="add-cart" onclick="addToCart()"><i class="fas fa-cart-plus"></i> Add to Cart</button>
+        </div>
+      </div>
+      <div class="product-card fade-up delay-2">
+        <div class="product-img">🪣</div>
+        <div class="product-info"><h4>Heavy Duty Cleaning Kit</h4>
+          <div class="price">KES 950 <span class="old-price">1,200</span> <span class="discount">-21%</span></div>
+          <div class="stars">★★★★★ <span>(211)</span></div>
+          <button class="add-cart" onclick="addToCart()"><i class="fas fa-cart-plus"></i> Add to Cart</button>
+        </div>
+      </div>
+      <div class="product-card fade-up delay-3">
+        <div class="product-img">📱</div>
+        <div class="product-info"><h4>Smartphone 4G – 64GB</h4>
+          <div class="price">KES 12,999 <span class="old-price">15,000</span> <span class="discount">-13%</span></div>
+          <div class="stars">★★★★☆ <span>(56)</span></div>
+          <button class="add-cart" onclick="addToCart()"><i class="fas fa-cart-plus"></i> Add to Cart</button>
+        </div>
+      </div>
+      <div class="product-card fade-up">
+        <div class="product-img">🏗️</div>
+        <div class="product-info"><h4>Cement Bags (50kg) × 5</h4>
+          <div class="price">KES 3,500</div>
+          <div class="stars">★★★★★ <span>(302)</span></div>
+          <button class="add-cart" onclick="addToCart()"><i class="fas fa-cart-plus"></i> Add to Cart</button>
+        </div>
+      </div>
+      <div class="product-card fade-up delay-1">
+        <div class="product-img">🔌</div>
+        <div class="product-info"><h4>Electrical Cable Roll 2.5mm</h4>
+          <div class="price">KES 4,200 <span class="old-price">5,000</span> <span class="discount">-16%</span></div>
+          <div class="stars">★★★★☆ <span>(88)</span></div>
+          <button class="add-cart" onclick="addToCart()"><i class="fas fa-cart-plus"></i> Add to Cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════
+     SCHOLARSHIPS TAB
+══════════════════════════ -->
+<div id="scholarships" class="tab-content">
+  <div class="sc-layout">
+
+    <div class="sc-banner fade-up">
+      <h2>Scholarships & Bursaries</h2>
+      <p>Discover funding opportunities for your education and professional development in Kenya and beyond.</p>
+    </div>
+
+    <div class="sc-filters">
+      <div class="sc-filter active" onclick="setFilter(this)">🎓 All</div>
+      <div class="sc-filter" onclick="setFilter(this)">🇰🇪 Local</div>
+      <div class="sc-filter" onclick="setFilter(this)">🌍 International</div>
+      <div class="sc-filter" onclick="setFilter(this)">🔧 Vocational</div>
+      <div class="sc-filter" onclick="setFilter(this)">💻 Tech</div>
+      <div class="sc-filter" onclick="setFilter(this)">👩 Women</div>
+      <div class="sc-filter" onclick="setFilter(this)">🏫 University</div>
+    </div>
+
+    <div class="sc-grid">
+
+      <!-- Card 1 -->
+      <div class="sc-card fade-up">
+        <div class="sc-card-top">
+          <div class="sc-icon" style="background:#f5f3ff;">🏛️</div>
+          <div class="sc-card-info">
+            <h4>Kenya Government Bursary Fund</h4>
+            <p>Ministry of Education · Kenya</p>
+          </div>
+        </div>
+        <div class="sc-card-body">
+          <p class="sc-deadline"><i class="fas fa-clock"></i> Deadline: 30 June 2025</p>
+          <div class="sc-meta">
+            <div class="sc-meta-item"><label>Amount</label><span>KES 20,000/yr</span></div>
+            <div class="sc-meta-item"><label>Level</label><span>Secondary & TVET</span></div>
+          </div>
+          <div class="sc-tags">
+            <span class="tag purple">Local</span><span class="tag green">Open</span><span class="tag">Form 1–4</span>
+          </div>
+          <p class="sc-desc">Government bursary for needy students in public secondary schools and TVET institutions. Apply through your county government offices.</p>
+          <button class="sc-apply-btn" onclick="showToast('Redirecting to application portal…')">
+            <i class="fas fa-external-link-alt"></i> Apply Now
+          </button>
+        </div>
+        <div class="sc-stats-bar">
+          <div class="sc-stat"><i class="fas fa-users"></i> 12,400 applicants</div>
+          <div class="sc-stat"><i class="fas fa-award"></i> 3,200 awarded</div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="sc-card fade-up delay-1">
+        <div class="sc-card-top">
+          <div class="sc-icon" style="background:#eff6ff;">🌍</div>
+          <div class="sc-card-info">
+            <h4>Mastercard Foundation Scholars</h4>
+            <p>Mastercard Foundation · International</p>
+          </div>
+        </div>
+        <div class="sc-card-body">
+          <p class="sc-deadline"><i class="fas fa-clock"></i> Deadline: 31 August 2025</p>
+          <div class="sc-meta">
+            <div class="sc-meta-item"><label>Amount</label><span>Full Scholarship</span></div>
+            <div class="sc-meta-item"><label>Level</label><span>University</span></div>
+          </div>
+          <div class="sc-tags">
+            <span class="tag purple">International</span><span class="tag green">Open</span>
+          </div>
+          <p class="sc-desc">Full scholarship for academically talented yet economically disadvantaged young Africans to study at top universities worldwide.</p>
+          <button class="sc-apply-btn" onclick="showToast('Redirecting to application portal…')">
+            <i class="fas fa-external-link-alt"></i> Apply Now
+          </button>
+        </div>
+        <div class="sc-stats-bar">
+          <div class="sc-stat"><i class="fas fa-users"></i> 45,000 applicants</div>
+          <div class="sc-stat"><i class="fas fa-award"></i> 500 awarded/yr</div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="sc-card fade-up delay-2">
+        <div class="sc-card-top">
+          <div class="sc-icon" style="background:#fef3c7;">🔧</div>
+          <div class="sc-card-info">
+            <h4>TVET Authority Skills Grant</h4>
+            <p>TVETA Kenya · Vocational</p>
+          </div>
+        </div>
+        <div class="sc-card-body">
+          <p class="sc-deadline"><i class="fas fa-clock"></i> Deadline: 15 July 2025</p>
+          <div class="sc-meta">
+            <div class="sc-meta-item"><label>Amount</label><span>KES 45,000</span></div>
+            <div class="sc-meta-item"><label>Level</label><span>Certificate / Diploma</span></div>
+          </div>
+          <div class="sc-tags">
+            <span class="tag purple">Vocational</span><span class="tag green">Open</span><span class="tag">Local</span>
+          </div>
+          <p class="sc-desc">Covers tuition, tools and accommodation for skilled trades including plumbing, electrical, masonry, welding and automotive.</p>
+          <button class="sc-apply-btn" onclick="showToast('Redirecting to application portal…')">
+            <i class="fas fa-external-link-alt"></i> Apply Now
+          </button>
+        </div>
+        <div class="sc-stats-bar">
+          <div class="sc-stat"><i class="fas fa-users"></i> 8,900 applicants</div>
+          <div class="sc-stat"><i class="fas fa-award"></i> 2,100 awarded</div>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="sc-card fade-up delay-3">
+        <div class="sc-card-top">
+          <div class="sc-icon" style="background:#ecfdf5;">💻</div>
+          <div class="sc-card-info">
+            <h4>Google Africa Developer Scholarship</h4>
+            <p>Google via Andela · Tech</p>
+          </div>
+        </div>
+        <div class="sc-card-body">
+          <p class="sc-deadline"><i class="fas fa-clock"></i> Deadline: 1 September 2025</p>
+          <div class="sc-meta">
+            <div class="sc-meta-item"><label>Amount</label><span>Full Training</span></div>
+            <div class="sc-meta-item"><label>Level</label><span>Any level</span></div>
+          </div>
+          <div class="sc-tags">
+            <span class="tag purple">Tech</span><span class="tag green">Open</span>
+          </div>
+          <p class="sc-desc">Free cloud and mobile development training plus certification for young Africans interested in building technology careers.</p>
+          <button class="sc-apply-btn" onclick="showToast('Redirecting to application portal…')">
+            <i class="fas fa-external-link-alt"></i> Apply Now
+          </button>
+        </div>
+        <div class="sc-stats-bar">
+          <div class="sc-stat"><i class="fas fa-users"></i> 30,000 applicants</div>
+          <div class="sc-stat"><i class="fas fa-award"></i> 1,000 seats</div>
+        </div>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="sc-card fade-up">
+        <div class="sc-card-top">
+          <div class="sc-icon" style="background:#fdf2f8;">👩</div>
+          <div class="sc-card-info">
+            <h4>Equity Wings to Fly</h4>
+            <p>Equity Foundation · Kenya</p>
+          </div>
+        </div>
+        <div class="sc-card-body">
+          <p class="sc-deadline"><i class="fas fa-clock"></i> Deadline: 28 February 2026</p>
+          <div class="sc-meta">
+            <div class="sc-meta-item"><label>Amount</label><span>Full Board</span></div>
+            <div class="sc-meta-item"><label>Level</label><span>Form 1 entry</span></div>
+          </div>
+          <div class="sc-tags">
+            <span class="tag purple">Local</span><span class="tag green">Open</span><span class="tag">Secondary</span>
+          </div>
+          <p class="sc-desc">Transformative scholarship for bright but disadvantaged students entering Form 1, covering school fees, uniform, and living expenses.</p>
+          <button class="sc-apply-btn" onclick="showToast('Redirecting to application portal…')">
+            <i class="fas fa-external-link-alt"></i> Apply Now
+          </button>
+        </div>
+        <div class="sc-stats-bar">
+          <div class="sc-stat"><i class="fas fa-users"></i> 50,000 applicants</div>
+          <div class="sc-stat"><i class="fas fa-award"></i> 3,000 awarded/yr</div>
+        </div>
+      </div>
+
+      <!-- Card 6 -->
+      <div class="sc-card fade-up delay-1">
+        <div class="sc-card-top">
+          <div class="sc-icon" style="background:#fff7ed;">🌏</div>
+          <div class="sc-card-info">
+            <h4>Commonwealth Scholarship</h4>
+            <p>Commonwealth Foundation · UK</p>
+          </div>
+        </div>
+        <div class="sc-card-body">
+          <p class="sc-deadline"><i class="fas fa-clock"></i> Deadline: 15 October 2025</p>
+          <div class="sc-meta">
+            <div class="sc-meta-item"><label>Amount</label><span>Full + Stipend</span></div>
+            <div class="sc-meta-item"><label>Level</label><span>Masters / PhD</span></div>
+          </div>
+          <div class="sc-tags">
+            <span class="tag purple">International</span><span class="tag">Postgraduate</span>
+          </div>
+          <p class="sc-desc">Prestigious scholarship for Kenyan students to pursue postgraduate study at leading UK universities, including flights and living allowance.</p>
+          <button class="sc-apply-btn" onclick="showToast('Redirecting to application portal…')">
+            <i class="fas fa-external-link-alt"></i> Apply Now
+          </button>
+        </div>
+        <div class="sc-stats-bar">
+          <div class="sc-stat"><i class="fas fa-users"></i> 7,200 applicants</div>
+          <div class="sc-stat"><i class="fas fa-award"></i> 80 Kenyan slots</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Floating Cart -->
+<div class="cart-count" id="cartBtn" style="display:none" onclick="alert('Cart: ' + cartItems + ' items\n\nM-Pesa checkout coming soon!')">
+  <i class="fas fa-shopping-cart"></i>
+  <div class="cart-badge" id="cartBadge">0</div>
+</div>
+
+<!-- WhatsApp -->
+<a href="https://wa.me/254722553151" target="_blank"
+  style="position:fixed;bottom:90px;right:24px;background:#25d366;width:50px;height:50px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:white;font-size:22px;box-shadow:0 4px 16px rgba(37,211,102,0.4);z-index:200;text-decoration:none;">
+  <i class="fab fa-whatsapp"></i>
+</a>
+
+<!-- Toast -->
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg"></span></div>
+
+<script>
+let cartItems = 0;
+let loggedIn = false;
+let currentUser = {};
+
+/* ─── TABS ─── */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ─── AUTH MODAL ─── */
+function openAuth() { document.getElementById('authModal').classList.add('open'); }
+function closeAuth() { document.getElementById('authModal').classList.remove('open'); }
+
+document.getElementById('authModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAuth();
+});
+
+function switchAuth(mode, btn) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('loginForm').style.display = mode === 'login' ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = mode === 'register' ? 'block' : 'none';
+}
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  if (!email || !pass) { showToast('Please fill in all fields', true); return; }
+  // Simulate login
+  const name = email.split('@')[0];
+  const initials = name.slice(0,2).toUpperCase();
+  loginUser({ name: name.charAt(0).toUpperCase() + name.slice(1), initials, role: 'Member' });
+}
+
+function doRegister() {
+  const first = document.getElementById('regFirst').value.trim();
+  const last  = document.getElementById('regLast').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const role  = document.getElementById('regRole').value;
+  const pass  = document.getElementById('regPass').value;
+  if (!first || !last || !email || !role || !pass) { showToast('Please fill in all fields', true); return; }
+  const initials = (first[0] + last[0]).toUpperCase();
+  loginUser({ name: first + ' ' + last, initials, role });
+}
+
+function socialLogin(provider) {
+  loginUser({ name: provider + ' User', initials: provider[0] + 'U', role: 'Member' });
+}
+
+function loginUser(user) {
+  loggedIn = true;
+  currentUser = user;
+  closeAuth();
+
+  // Update UI
+  document.getElementById('loginBtn').style.display = 'none';
+  document.getElementById('userMenu').style.display = 'block';
+  document.getElementById('notifBtn').style.display = 'flex';
+  document.getElementById('userAvatar').textContent = user.initials;
+  document.getElementById('dropdownName').textContent = user.name;
+  document.getElementById('dropdownRole').textContent = user.role;
+  document.getElementById('sidebarAvatar').textContent = user.initials;
+  document.getElementById('sidebarName').textContent = user.name;
+  document.getElementById('feedAvatar').textContent = user.initials;
+
+  showToast('Welcome back, ' + user.name.split(' ')[0] + '! 🎉');
+}
+
+function doLogout() {
+  loggedIn = false;
+  document.getElementById('loginBtn').style.display = 'block';
+  document.getElementById('userMenu').style.display = 'none';
+  document.getElementById('notifBtn').style.display = 'none';
+  document.getElementById('userDropdown').classList.remove('open');
+  document.getElementById('sidebarAvatar').textContent = 'JM';
+  document.getElementById('sidebarName').textContent = 'John Mwangi';
+  document.getElementById('feedAvatar').textContent = 'JM';
+  showToast('You have been logged out.');
+}
+
+function toggleDropdown() {
+  document.getElementById('userDropdown').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.user-menu')) {
+    document.getElementById('userDropdown').classList.remove('open');
+  }
+});
+
+/* ─── TOAST ─── */
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.style.background = isError ? '#dc2626' : '#16a34a';
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ─── SHOP ─── */
+function addToCart() {
+  cartItems++;
+  document.getElementById('cartBadge').textContent = cartItems;
+  document.getElementById('cartBtn').style.display = 'flex';
+  const btn = event.target.closest('button');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-check"></i> Added!';
+  btn.style.background = '#16a34a';
+  setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 1200);
+}
+
+function setCategory(el) {
+  document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function setFilter(el) {
+  document.querySelectorAll('.sc-filter').forEach(f => f.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ─── VIDEO UPLOAD ─── */
+function handleUpload(input) {
+  if (!input.files[0]) return;
+  const grid = document.getElementById('videoGrid');
+  const card = document.createElement('div');
+  card.className = 'tt-card fade-up';
+  card.innerHTML = `
+    <div class="tt-thumb" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe)">🎥
+      <div class="tt-play"><i class="fas fa-play"></i></div>
+    </div>
+    <div class="tt-info">
+      <h4>${input.files[0].name.replace(/\.[^.]+$/, '')}</h4>
+      <span>@you · just now</span>
+      <div class="tt-stats">
+        <div class="tt-stat"><i class="fas fa-heart"></i> 0</div>
+        <div class="tt-stat"><i class="fas fa-eye"></i> 1</div>
+      </div>
+    </div>`;
+  grid.prepend(card);
+  showToast('Video uploaded successfully!');
+}
+</script>
+</body>
+</html>
